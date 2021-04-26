@@ -40,7 +40,8 @@ class MovingAverageQueue private(array: Array[BigDecimal]) extends SimpleQueue[B
 
   // Query the Nth element from the queue
   override def get(n: Int): BigDecimal = {
-    if (n > array.size) throw new IllegalArgumentException(s"$n is over length")
+    if (n > array.size) throw new IllegalArgumentException(s"$n is over the length")
+    else if (n < 0) throw new IllegalArgumentException("can not accept negative number")
     else array(n)
   }
 
@@ -50,13 +51,14 @@ class MovingAverageQueue private(array: Array[BigDecimal]) extends SimpleQueue[B
   }
 
   // Removes the first n element at the beginning of the immutable queue, and returns the new queue.
-  override def deQueue(n: Int = 0): MovingAverageQueue = {
-    new MovingAverageQueue(if (n == 0) array.drop(1) else array.drop(n))
+  override def deQueue(n: Int = 1): MovingAverageQueue = {
+    if (n <= 0) throw new IllegalArgumentException("can only accept positive number")
+    new MovingAverageQueue(array.drop(n))
   }
 
   // calculate the moving average of the last N elements
   override def movingAverageOfLast(n: Int): BigDecimal = {
-    if (n == 0) throw new IllegalArgumentException("can not accept 0")
+    if (n <= 0) throw new IllegalArgumentException("can only accept positive number")
     else array.takeRight(n).sum / n
   }
 }
@@ -70,11 +72,19 @@ object MovingAverageQueue {
 
 // works like a test case
 object Run extends App {
-  var q = MovingAverageQueue(11.1, 20, 87)
-  q = q.enQueue(16, 32, 0.4)
-  println(q.movingAverageOfLast(6))
+  var i: BigDecimal = 0;
+  var q = MovingAverageQueue(11, 22.2, 0.33)
+  q = q.enQueue(4)
+  q = q.enQueue(5.5, 666)
+  i = q.movingAverageOfLast(6)
+  assert(i == BigDecimal("118.1716666666666666666666666666667"))
 
-  q = q.deQueue(5)
-  q = q.enQueue(128)
-  println(q.movingAverageOfLast(3))
+  q = q.deQueue()
+  q = q.enQueue(2)
+  i = q.movingAverageOfLast(3)
+  assert(i == BigDecimal("224.5"))
+
+  q = q.deQueue(100)
+  i = q.movingAverageOfLast(30)
+  assert(i == BigDecimal("0"))
 }
